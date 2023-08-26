@@ -6,7 +6,7 @@ import 'package:get_it/get_it.dart';
 
 void main() async {
   final client = await initClient();
-  GetIt.I.registerLazySingleton<TypedLink>(() => client);
+  GetIt.I.registerLazySingleton<Client>(() => client);
   runApp(const MyApp());
 }
 

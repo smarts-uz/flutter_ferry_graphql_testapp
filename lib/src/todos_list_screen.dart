@@ -1,5 +1,6 @@
 import 'package:ferry/ferry.dart';
 import 'package:ferry_flutter/ferry_flutter.dart';
+import 'package:ferry_testapp/src/add_todo_screen.dart';
 import 'package:ferry_testapp/src/edit_todo_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -8,23 +9,48 @@ import './graphql/__generated__/all_todos.data.gql.dart';
 import './graphql/__generated__/all_todos.var.gql.dart';
 import './graphql/__generated__/all_todos.req.gql.dart';
 
-class TodosScreen extends StatelessWidget {
-  TodosScreen({super.key});
+class TodosScreen extends StatefulWidget {
+  const TodosScreen({super.key});
 
-  final client = GetIt.I<TypedLink>();
+  @override
+  State<TodosScreen> createState() => _TodosScreenState();
+}
+
+class _TodosScreenState extends State<TodosScreen> {
+  final client = GetIt.I<Client>();
+  final todosReq = GTodosCollectionReq(
+    (b) => b..fetchPolicy = FetchPolicy.NetworkOnly,
+  );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Tasks'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AddTodoScreen(),
+                ),
+              ).then((value) {
+                if (value ?? false) {
+                  client.requestController.add(todosReq);
+                }
+              });
+            },
+            icon: const Icon(Icons.add_rounded),
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Operation<GTodosCollectionData, GTodosCollectionVars>(
             client: client,
-            operationRequest: GTodosCollectionReq((b) => b),
+            operationRequest: todosReq,
             builder: (context, response, error) {
               if (response!.loading) {
                 return const Center(child: CircularProgressIndicator());
