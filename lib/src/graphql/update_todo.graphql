@@ -1,0 +1,18 @@
+mutation UpdatetodosCollection(
+  $id: ID!
+  $title: String!
+  $description: String!
+) {
+  updatetodosCollection(
+    set: { title: $title, description: $description }
+    filter: { id: { eq: $id } }
+  ) {
+    affectedCount
+    records {
+      id
+      title
+      description
+      is_done
+    }
+  }
+}

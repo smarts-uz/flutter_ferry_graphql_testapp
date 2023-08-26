@@ -1,0 +1,12 @@
+query TodosCollection {
+  todosCollection {
+    edges {
+      node {
+        id
+        title
+        description
+        is_done
+      }
+    }
+  }
+}

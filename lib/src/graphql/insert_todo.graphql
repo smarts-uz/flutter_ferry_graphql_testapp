@@ -1,0 +1,13 @@
+mutation InsertIntotodosCollection($title: String!, $description: String!) {
+  insertIntotodosCollection(
+    objects: { title: $title, description: $description }
+  ) {
+    affectedCount
+    records {
+      id
+      title
+      description
+      is_done
+    }
+  }
+}

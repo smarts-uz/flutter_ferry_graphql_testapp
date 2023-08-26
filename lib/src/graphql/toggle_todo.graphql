@@ -1,0 +1,14 @@
+mutation UpdatetodosCollection($id: ID!, $is_done: Boolean!) {
+  updatetodosCollection(
+    set: { is_done: $is_done }
+    filter: { id: { eq: $id } }
+  ) {
+    affectedCount
+    records {
+      id
+      title
+      description
+      is_done
+    }
+  }
+}

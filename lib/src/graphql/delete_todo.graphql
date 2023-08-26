@@ -1,0 +1,11 @@
+mutation DeleteFromtodosCollection($id: ID!) {
+  deleteFromtodosCollection(atMost: 1, filter: { id: { eq: $id } }) {
+    affectedCount
+    records {
+      id
+      title
+      description
+      is_done
+    }
+  }
+}
