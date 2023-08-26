@@ -8,6 +8,8 @@ import 'package:get_it/get_it.dart';
 import './graphql/__generated__/all_todos.data.gql.dart';
 import './graphql/__generated__/all_todos.var.gql.dart';
 import './graphql/__generated__/all_todos.req.gql.dart';
+import './graphql/__generated__/toggle_todo.req.gql.dart';
+import './graphql/__generated__/delete_todo.req.gql.dart';
 
 class TodosScreen extends StatefulWidget {
   const TodosScreen({super.key});
@@ -18,9 +20,6 @@ class TodosScreen extends StatefulWidget {
 
 class _TodosScreenState extends State<TodosScreen> {
   final client = GetIt.I<Client>();
-  final todosReq = GTodosCollectionReq(
-    (b) => b..fetchPolicy = FetchPolicy.NetworkOnly,
-  );
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +36,7 @@ class _TodosScreenState extends State<TodosScreen> {
                 ),
               ).then((value) {
                 if (value ?? false) {
-                  client.requestController.add(todosReq);
+                  client.requestController.add(GTodosCollectionReq());
                 }
               });
             },
@@ -50,7 +49,7 @@ class _TodosScreenState extends State<TodosScreen> {
           padding: const EdgeInsets.all(16),
           child: Operation<GTodosCollectionData, GTodosCollectionVars>(
             client: client,
-            operationRequest: todosReq,
+            operationRequest: GTodosCollectionReq(),
             builder: (context, response, error) {
               if (response!.loading) {
                 return const Center(child: CircularProgressIndicator());
@@ -74,8 +73,22 @@ class _TodosScreenState extends State<TodosScreen> {
                                 child: const Text('No'),
                               ),
                               TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context, true);
+                                onPressed: () async {
+                                  final deleteTodo =
+                                      GDeleteFromtodosCollectionReq(
+                                    (b) => b
+                                      ..vars.id =
+                                          todos[index].node.id.toString(),
+                                  );
+                                  await client
+                                      .request(deleteTodo)
+                                      .firstWhere((response) {
+                                    return response.dataSource !=
+                                        DataSource.Optimistic;
+                                  });
+                                  if (context.mounted) {
+                                    Navigator.pop(context, true);
+                                  }
                                 },
                                 child: const Text('Yes'),
                               ),
@@ -91,7 +104,11 @@ class _TodosScreenState extends State<TodosScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const EditTodoScreen(),
+                            builder: (context) => EditTodoScreen(
+                              title: todos[index].node.title ?? '',
+                              description: todos[index].node.description ?? '',
+                              id: todos[index].node.id.toString(),
+                            ),
                           ),
                         );
                       },
@@ -99,7 +116,14 @@ class _TodosScreenState extends State<TodosScreen> {
                       subtitle: Text(todos[index].node.description ?? ''),
                       trailing: Checkbox(
                         value: todos[index].node.is_done,
-                        onChanged: (_) {},
+                        onChanged: (_) {
+                          final toggleTodo = GUpdatetodosCollectionReq(
+                            (b) => b
+                              ..vars.id = todos[index].node.id.toString()
+                              ..vars.is_done = !todos[index].node.is_done!,
+                          );
+                          client.request(toggleTodo);
+                        },
                       ),
                     ),
                   );
